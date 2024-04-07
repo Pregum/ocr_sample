@@ -87,92 +87,105 @@ class CameraPreviewPage extends HookConsumerWidget {
             CameraController? val
           )
               when val != null =>
-            Column(
+            Stack(
               children: [
-                SizedBox(
-                  height: MediaQuery.sizeOf(context).height * 0.7,
-                  width: MediaQuery.sizeOf(context).width,
-                  child: selectedImage.value != null
-                      ? Image.file(File(selectedImage.value!.path))
-                      : CameraPreview(val),
+                Positioned(
+                  child: SizedBox(
+                    height: MediaQuery.sizeOf(context).height,
+                    width: MediaQuery.sizeOf(context).width,
+                    child: selectedImage.value != null
+                        ? Image.file(File(selectedImage.value!.path))
+                        : CameraPreview(val),
+                  ),
                 ),
                 if (selectedImage.value == null)
-                  Expanded(
-                    child: Container(
-                      color: AppColors.black,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Spacer(),
-                          SizedBox(
-                            height: MediaQuery.sizeOf(context).height * 0.3,
-                            width: MediaQuery.sizeOf(context).width * 0.3,
-                            child: PlatformIconButton(
-                              padding: const EdgeInsets.all(0),
-                              onPressed: () async {
-                                try {
-                                  final path = [
-                                    (await getTemporaryDirectory()).path,
-                                    '${DateTime.now().toIso8601String()}.png'
-                                  ].join('/');
-                                  debugPrint('tmp path: $path');
+                  Positioned(
+                    height: MediaQuery.sizeOf(context).height * 0.2,
+                    bottom: 0,
+                    width: MediaQuery.sizeOf(context).width,
+                    child: Expanded(
+                      child: Container(
+                        // color: AppColors.black,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Spacer(),
+                            SizedBox(
+                              // height: MediaQuery.sizeOf(context).height * 0.3,
+                              width: MediaQuery.sizeOf(context).width * 0.3,
+                              child: PlatformIconButton(
+                                padding: const EdgeInsets.all(0),
+                                onPressed: () async {
+                                  try {
+                                    final path = [
+                                      (await getTemporaryDirectory()).path,
+                                      '${DateTime.now().toIso8601String()}.png'
+                                    ].join('/');
+                                    debugPrint('tmp path: $path');
 
-                                  final file =
-                                      await controller.value?.takePicture();
-                                  debugPrint('file.path: ${file?.path}');
-                                  if (file == null) {
-                                    return;
+                                    final file =
+                                        await controller.value?.takePicture();
+                                    debugPrint('file.path: ${file?.path}');
+                                    if (file == null) {
+                                      return;
+                                    }
+                                    selectedImage.value = file;
+                                    // File imageFile = File(path);
+                                  } catch (e) {
+                                    debugPrint('error: $e');
                                   }
-                                  selectedImage.value = file;
-                                  // File imageFile = File(path);
-                                } catch (e) {
-                                  debugPrint('error: $e');
-                                }
-                              },
-                              icon: Icon(
-                                Icons.camera,
-                                size: min(
-                                    MediaQuery.sizeOf(context).height * 0.3,
-                                    MediaQuery.sizeOf(context).width * 0.3),
+                                },
+                                icon: Icon(
+                                  Icons.camera,
+                                  // size: min(
+                                  //   MediaQuery.sizeOf(context).height * 0.2,
+                                  //   MediaQuery.sizeOf(context).width * 0.3,
+                                  // ),
+                                ),
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                        ],
+                            const Spacer(),
+                          ],
+                        ),
                       ),
                     ),
                   )
                 else
-                  Expanded(
-                    child: Container(
-                      color: AppColors.black,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Gap(24),
-                          PlatformTextButton(
-                            child: const Text('再撮影'),
-                            onPressed: () {
-                              selectedImage.value = null;
-                            },
-                          ),
-                          const Spacer(),
-                          TextButton(
-                            child: const Text('決定'),
-                            onPressed: () {
-                              if (selectedImage.value == null) {
-                                return;
-                              }
-                              onTakePicture?.call(selectedImage.value!);
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                              }
-                            },
-                          ),
-                          const Gap(24),
-                        ],
+                  Positioned(
+                    height: MediaQuery.sizeOf(context).height * 0.2,
+                    bottom: 0,
+                    width: MediaQuery.sizeOf(context).width,
+                    child: Expanded(
+                      child: Container(
+                        // color: AppColors.black,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Gap(24),
+                            PlatformTextButton(
+                              child: const Text('再撮影'),
+                              onPressed: () {
+                                selectedImage.value = null;
+                              },
+                            ),
+                            const Spacer(),
+                            TextButton(
+                              child: const Text('決定'),
+                              onPressed: () {
+                                if (selectedImage.value == null) {
+                                  return;
+                                }
+                                onTakePicture?.call(selectedImage.value!);
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                            ),
+                            const Gap(24),
+                          ],
+                        ),
                       ),
                     ),
                   )
