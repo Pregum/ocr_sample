@@ -8,6 +8,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:gap/gap.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:ocr_sample/detected_area.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CameraPreviewPage extends HookConsumerWidget {
@@ -100,94 +101,106 @@ class CameraPreviewPage extends HookConsumerWidget {
                         : CameraPreview(val),
                   ),
                 ),
-                if (selectedImage.value == null)
+                if (recognizedText.value != null)
                   Positioned(
-                    height: MediaQuery.sizeOf(context).height * 0.2,
-                    bottom: 0,
-                    width: MediaQuery.sizeOf(context).width,
-                    child: Expanded(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Spacer(),
-                          SizedBox(
-                            // height: MediaQuery.sizeOf(context).height * 0.3,
-                            width: MediaQuery.sizeOf(context).width * 0.3,
-                            child: PlatformIconButton(
-                              padding: const EdgeInsets.all(0),
-                              onPressed: () async {
-                                try {
-                                  final camera = controller.value;
-                                  if (camera == null) {
-                                    return;
-                                  }
-                                  final result = await _scanImage(context, camera);
-                                  debugPrint('result: ${ result.text }');
-                                  recognizedText.value = result;
-                                  // final path = [
-                                  //   (await getTemporaryDirectory()).path,
-                                  //   '${DateTime.now().toIso8601String()}.png'
-                                  // ].join('/');
-                                  // debugPrint('tmp path: $path');
-
-                                  // final file =
-                                  //     await controller.value?.takePicture();
-                                  // debugPrint('file.path: ${file?.path}');
-                                  // if (file == null) {
-                                  //   return;
-                                  // }
-                                  // selectedImage.value = file;
-                                  // File imageFile = File(path);
-                                } catch (e) {
-                                  debugPrint('error: $e');
+                    child: Container(
+                      child: CustomPaint(
+                        painter: DetectedArea(
+                            textBlocks: recognizedText.value?.blocks ?? []),
+                        child: Container(),
+                      ),
+                    ),
+                  ),
+                // if (selectedImage.value == null)
+                Positioned(
+                  height: MediaQuery.sizeOf(context).height * 0.2,
+                  bottom: 0,
+                  width: MediaQuery.sizeOf(context).width,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // const Spacer(),
+                      Center(
+                        child: SizedBox(
+                          // height: MediaQuery.sizeOf(context).height * 0.3,
+                          width: MediaQuery.sizeOf(context).width * 0.3,
+                          child: PlatformIconButton(
+                            padding: const EdgeInsets.all(0),
+                            onPressed: () async {
+                              try {
+                                final camera = controller.value;
+                                if (camera == null) {
+                                  return;
                                 }
-                              },
-                              icon: const Icon(
-                                Icons.camera,
-                              ),
+                                final result =
+                                    await _scanImage(context, camera);
+                                debugPrint('result: ${result.text}');
+                                recognizedText.value = result;
+                                // final path = [
+                                //   (await getTemporaryDirectory()).path,
+                                //   '${DateTime.now().toIso8601String()}.png'
+                                // ].join('/');
+                                // debugPrint('tmp path: $path');
+
+                                // final file =
+                                //     await controller.value?.takePicture();
+                                // debugPrint('file.path: ${file?.path}');
+                                // if (file == null) {
+                                //   return;
+                                // }
+                                // selectedImage.value = file;
+                                // File imageFile = File(path);
+                              } catch (e) {
+                                debugPrint('error: $e');
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.camera,
+                              color: Colors.blue,
                             ),
                           ),
-                          const Spacer(),
-                        ],
+                        ),
                       ),
-                    ),
-                  )
-                else
-                  Positioned(
-                    height: MediaQuery.sizeOf(context).height * 0.2,
-                    bottom: 0,
-                    width: MediaQuery.sizeOf(context).width,
-                    child: Expanded(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Gap(24),
-                          PlatformTextButton(
-                            child: const Text('再撮影'),
-                            onPressed: () {
-                              selectedImage.value = null;
-                            },
-                          ),
-                          const Spacer(),
-                          TextButton(
-                            child: const Text('決定'),
-                            onPressed: () {
-                              if (selectedImage.value == null) {
-                                return;
-                              }
-                              onTakePicture?.call(selectedImage.value!);
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                              }
-                            },
-                          ),
-                          const Gap(24),
-                        ],
-                      ),
-                    ),
-                  )
+                      // const Spacer(),
+                    ],
+                  ),
+                ),
+                // else
+                //   Positioned(
+                //     height: MediaQuery.sizeOf(context).height * 0.2,
+                //     bottom: 0,
+                //     width: MediaQuery.sizeOf(context).width,
+                //     child: Expanded(
+                //       child: Row(
+                //         mainAxisSize: MainAxisSize.max,
+                //         crossAxisAlignment: CrossAxisAlignment.center,
+                //         children: [
+                //           const Gap(24),
+                //           PlatformTextButton(
+                //             child: const Text('再撮影'),
+                //             onPressed: () {
+                //               selectedImage.value = null;
+                //             },
+                //           ),
+                //           const Spacer(),
+                //           TextButton(
+                //             child: const Text('決定'),
+                //             onPressed: () {
+                //               if (selectedImage.value == null) {
+                //                 return;
+                //               }
+                //               onTakePicture?.call(selectedImage.value!);
+                //               if (context.mounted) {
+                //                 Navigator.of(context).pop();
+                //               }
+                //             },
+                //           ),
+                //           const Gap(24),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
               ],
             ),
           (_, _) => const Center(child: CircularProgressIndicator.adaptive()),
