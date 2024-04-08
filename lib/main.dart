@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ocr_sample/camera_preview_page.dart';
+import 'package:ocr_sample/text_detector_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -51,7 +52,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('サンプルページへ遷移'),
-            )
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TextRecognizerView(),
+                  ),
+                );
+              },
+              child: const Text('TextDetectorViewへ遷移'),
+            ),
           ],
         ),
       ),
