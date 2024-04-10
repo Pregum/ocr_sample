@@ -46,7 +46,7 @@ class _TextRecognizerViewState extends State<TextRecognizerView> {
             right: 100,
             child: Row(
               children: [
-                Spacer(),
+                const Spacer(),
                 Container(
                     decoration: BoxDecoration(
                       color: Colors.black54,
@@ -56,7 +56,7 @@ class _TextRecognizerViewState extends State<TextRecognizerView> {
                       padding: const EdgeInsets.all(4.0),
                       child: _buildDropdown(),
                     )),
-                Spacer(),
+                const Spacer(),
               ],
             )),
       ]),
@@ -113,8 +113,8 @@ class _TextRecognizerViewState extends State<TextRecognizerView> {
       _customPaint = null;
     }
     _isBusy = false;
-    if (mounted) {
-      setState(() {});
-    }
+    // if (mounted) {
+    //   setState(() {});
+    // }
   }
 }
