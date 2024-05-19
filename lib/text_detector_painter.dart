@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
@@ -20,9 +21,11 @@ class TextRecognizerPainter extends CustomPainter {
   final Size imageSize;
   final InputImageRotation rotation;
   final CameraLensDirection cameraLensDirection;
+  final List<Rect> paintedBlocks = <Rect>[];
 
   @override
   void paint(Canvas canvas, Size size) {
+    paintedBlocks.clear();
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
@@ -38,7 +41,7 @@ class TextRecognizerPainter extends CustomPainter {
             textDirection: TextDirection.ltr),
       );
       builder.pushStyle(
-          ui.TextStyle(color: Colors.lightGreenAccent, background: background));
+          ui.TextStyle(color: Colors.greenAccent, background: background));
       builder.addText(textBlock.text);
       builder.pop();
 
@@ -162,6 +165,15 @@ class TextRecognizerPainter extends CustomPainter {
       // Add the first point to close the polygon
       cornerPoints.add(cornerPoints.first);
       canvas.drawPoints(PointMode.polygon, cornerPoints, paint);
+      // debugPrint('cornerPoints --- : $cornerPoints');
+      
+      // blocksに追加
+      // final rect = Rect.fromPoints(cornerPoints.first, cornerPoints.last);
+      final minX = cornerPoints.map((e) => e.dx).min;
+      final minY = cornerPoints.map((e) => e.dy).min;
+      final maxX = cornerPoints.map((e) => e.dx).max;
+      final maxY = cornerPoints.map((e) => e.dy).max;
+      paintedBlocks.add(Rect.fromLTRB(minX, minY, maxX, maxY));
 
       canvas.drawParagraph(
         builder.build()

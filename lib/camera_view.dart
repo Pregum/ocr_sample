@@ -4,17 +4,19 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:ocr_sample/text_detector_painter.dart';
 
 class CameraView extends StatefulWidget {
-  CameraView(
-      {Key? key,
-      required this.customPaint,
-      required this.onImage,
-      this.onCameraFeedReady,
-      this.onDetectorViewModeChanged,
-      this.onCameraLensDirectionChanged,
-      this.initialCameraLensDirection = CameraLensDirection.back})
-      : super(key: key);
+  CameraView({
+    Key? key,
+    required this.customPaint,
+    required this.onImage,
+    this.onCameraFeedReady,
+    this.onDetectorViewModeChanged,
+    this.onCameraLensDirectionChanged,
+    this.initialCameraLensDirection = CameraLensDirection.back,
+    this.onTapCustomPaint,
+  }) : super(key: key);
 
   final CustomPaint? customPaint;
   final Function(InputImage inputImage) onImage;
@@ -22,6 +24,7 @@ class CameraView extends StatefulWidget {
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
+  final Function(List<Rect>, TapDownDetails tapDetails)? onTapCustomPaint;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -38,6 +41,7 @@ class _CameraViewState extends State<CameraView> {
   double _maxAvailableExposureOffset = 0.0;
   double _currentExposureOffset = 0.0;
   bool _changingCameraLens = false;
+  final List<Rect> _blocks = [];
 
   @override
   void initState() {
@@ -72,6 +76,17 @@ class _CameraViewState extends State<CameraView> {
     return Scaffold(body: _liveFeedBody());
   }
 
+  void _handleTapDown(TapDownDetails details) {
+    final tapPosition = details.localPosition;
+
+    for (int i = 0; i < _blocks.length; i++) {
+      if (_blocks[i].contains(tapPosition)) {
+        debugPrint('tapped block $i');
+        break;
+      }
+    }
+  }
+
   Widget _liveFeedBody() {
     if (_cameras.isEmpty) return Container();
     if (_controller == null) return Container();
@@ -83,12 +98,28 @@ class _CameraViewState extends State<CameraView> {
         children: <Widget>[
           Center(
             child: _changingCameraLens
-                ? Center(
-                    child: const Text('Changing camera lens'),
+                ? const Center(
+                    child: Text('Changing camera lens'),
                   )
                 : CameraPreview(
                     _controller!,
-                    child: widget.customPaint,
+                    child: GestureDetector(
+                        // onTapDown: _handleTapDown,// TODO: ここに_blocksを渡したいのけど、customPaintが親ウィジェットから渡されているのでこれをここで生成するようにする必要がある
+                        // もしくは、customPaint内で生成させるblockを外部参照できるようにさせる
+                        child: widget.customPaint,
+                        onTapDown: (TapDownDetails details) {
+                          final tmp = widget.customPaint?.painter as TextRecognizerPainter;
+                          final blocks = tmp.paintedBlocks;
+                          debugPrint('tap! tap! tap! -- $blocks}');
+                          widget.onTapCustomPaint?.call(blocks, details);
+                        }),
+                        // },
+                        // onTap: () {
+                        //   final tmp = widget.customPaint?.painter as TextRecognizerPainter;
+                        //   final blocks = tmp.paintedBlocks;
+                        //   debugPrint('tap! tap! tap! -- $blocks}');
+                        //   widget.onTapCustomPaint?.call();
+                        // }),
                   ),
           ),
           _backButton(),
@@ -111,7 +142,7 @@ class _CameraViewState extends State<CameraView> {
             heroTag: Object(),
             onPressed: () => Navigator.of(context).pop(),
             backgroundColor: Colors.black54,
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_ios_outlined,
               size: 20,
             ),

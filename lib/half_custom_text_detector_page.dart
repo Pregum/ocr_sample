@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -67,6 +68,13 @@ class HalfCustomTextDetectorPage extends HookWidget {
               initialCameraLensDirection: cameraLensDirection.value,
               onCameraLensDirectionChanged: (value) =>
                   cameraLensDirection.value = value,
+              onTapCustomPaint: (blocks, details) {
+                // debugPrint('text: ${text.value}');
+                debugPrint('blocks: $blocks');
+                debugPrint('details: $details');
+                final first = blocks.firstWhereOrNull((element) => element.contains(details.localPosition));
+                debugPrint('containsBlock: $first');
+              },
             ),
           ),
         ],

@@ -8,8 +8,8 @@ import 'gallery_view.dart';
 enum DetectorViewMode { liveFeed, gallery }
 
 class DetectorView extends StatefulWidget {
-  DetectorView({
-    Key? key,
+  const DetectorView({
+    super.key,
     required this.title,
     required this.onImage,
     this.customPaint,
@@ -19,7 +19,8 @@ class DetectorView extends StatefulWidget {
     this.onCameraFeedReady,
     this.onDetectorViewModeChanged,
     this.onCameraLensDirectionChanged,
-  }) : super(key: key);
+    this.onTapCustomPaint,
+  });
 
   final String title;
   final CustomPaint? customPaint;
@@ -30,6 +31,7 @@ class DetectorView extends StatefulWidget {
   final Function(DetectorViewMode mode)? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
+  final Function(List<Rect>, TapDownDetails tapDetails)? onTapCustomPaint;
 
   @override
   State<DetectorView> createState() => _DetectorViewState();
@@ -54,6 +56,7 @@ class _DetectorViewState extends State<DetectorView> {
             onDetectorViewModeChanged: _onDetectorViewModeChanged,
             initialCameraLensDirection: widget.initialCameraLensDirection,
             onCameraLensDirectionChanged: widget.onCameraLensDirectionChanged,
+            onTapCustomPaint: widget.onTapCustomPaint,
           )
         : GalleryView(
             title: widget.title,
