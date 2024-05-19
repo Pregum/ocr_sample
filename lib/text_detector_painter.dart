@@ -21,7 +21,7 @@ class TextRecognizerPainter extends CustomPainter {
   final Size imageSize;
   final InputImageRotation rotation;
   final CameraLensDirection cameraLensDirection;
-  final List<Rect> paintedBlocks = <Rect>[];
+  final List<(Rect, String)> paintedBlocks = <(Rect, String)>[];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -166,14 +166,14 @@ class TextRecognizerPainter extends CustomPainter {
       cornerPoints.add(cornerPoints.first);
       canvas.drawPoints(PointMode.polygon, cornerPoints, paint);
       // debugPrint('cornerPoints --- : $cornerPoints');
-      
+
       // blocksに追加
       // final rect = Rect.fromPoints(cornerPoints.first, cornerPoints.last);
       final minX = cornerPoints.map((e) => e.dx).min;
       final minY = cornerPoints.map((e) => e.dy).min;
       final maxX = cornerPoints.map((e) => e.dx).max;
       final maxY = cornerPoints.map((e) => e.dy).max;
-      paintedBlocks.add(Rect.fromLTRB(minX, minY, maxX, maxY));
+      paintedBlocks.add((Rect.fromLTRB(minX, minY, maxX, maxY), textBlock.text));
 
       canvas.drawParagraph(
         builder.build()

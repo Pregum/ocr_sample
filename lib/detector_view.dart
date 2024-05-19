@@ -20,6 +20,7 @@ class DetectorView extends StatefulWidget {
     this.onDetectorViewModeChanged,
     this.onCameraLensDirectionChanged,
     this.onTapCustomPaint,
+    this.onChangeVisibleDetectPainter,
   });
 
   final String title;
@@ -31,7 +32,8 @@ class DetectorView extends StatefulWidget {
   final Function(DetectorViewMode mode)? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
-  final Function(List<Rect>, TapDownDetails tapDetails)? onTapCustomPaint;
+  final Function(List<(Rect, String)>, TapDownDetails tapDetails)? onTapCustomPaint;
+  final Function(bool enableDetect)? onChangeVisibleDetectPainter;
 
   @override
   State<DetectorView> createState() => _DetectorViewState();
@@ -56,6 +58,7 @@ class _DetectorViewState extends State<DetectorView> {
             onDetectorViewModeChanged: _onDetectorViewModeChanged,
             initialCameraLensDirection: widget.initialCameraLensDirection,
             onCameraLensDirectionChanged: widget.onCameraLensDirectionChanged,
+            onChangedDetect: widget.onChangeVisibleDetectPainter,
             onTapCustomPaint: widget.onTapCustomPaint,
           )
         : GalleryView(

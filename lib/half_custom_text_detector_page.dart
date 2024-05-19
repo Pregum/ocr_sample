@@ -26,6 +26,8 @@ class HalfCustomTextDetectorPage extends HookWidget {
     final cameraLensDirection = useState(CameraLensDirection.back);
     final textRecognizer =
         useState(TextRecognizer(script: TextRecognitionScript.japanese));
+    final enabledDetectPainter = useState(true);
+    final selectedTextList = useState<List<(Rect, String)>>([]);
 
     useEffect(() {
       return () {
@@ -40,9 +42,6 @@ class HalfCustomTextDetectorPage extends HookWidget {
       appBar: AppBar(title: const Text('Half Custom Text Detector')),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Container(color: Colors.amber),
-          ),
           Positioned(
             height: MediaQuery.of(context).size.height * 0.5,
             // height: 500,
@@ -61,6 +60,7 @@ class HalfCustomTextDetectorPage extends HookWidget {
                   text,
                   cameraLensDirection,
                   textRecognizer,
+                  enabledDetectPainter,
                 );
               },
               text: text.value,
@@ -72,9 +72,53 @@ class HalfCustomTextDetectorPage extends HookWidget {
                 // debugPrint('text: ${text.value}');
                 debugPrint('blocks: $blocks');
                 debugPrint('details: $details');
-                final first = blocks.firstWhereOrNull((element) => element.contains(details.localPosition));
+                final first = blocks.firstWhereOrNull(
+                    (element) => element.$1.contains(details.localPosition));
                 debugPrint('containsBlock: $first');
+                if (first != null) {
+                  final newList =
+                      List<(Rect, String)>.from(selectedTextList.value);
+                  newList.add(first);
+                  // selectedTextList.value.add(first);
+                  selectedTextList.value = newList;
+                }
               },
+              onChangeVisibleDetectPainter: (bool enableDetect) {
+                enabledDetectPainter.value = enableDetect;
+                if (!enableDetect) {
+                  customPaint.value = null;
+                }
+              },
+            ),
+          ),
+          Positioned.fill(
+            top: MediaQuery.of(context).size.height * 0.5,
+            child: Container(
+              color: Colors.amber,
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  final item = selectedTextList.value[index];
+                  return Dismissible(
+                    key: ValueKey(item.$1),
+                    onDismissed: (direction) {
+                      final newList =
+                          List<(Rect, String)>.from(selectedTextList.value);
+                      newList.removeAt(index);
+                      selectedTextList.value = newList;
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        // title: Text('Item $index'),
+                        title: Text('Item name: ${item.$1}'),
+                        subtitle: Text('Rect: ${item.$2}'),
+                      ),
+                    ),
+                  );
+                },
+                itemCount: selectedTextList.value.length,
+                // itemCount: 1000,
+              ),
             ),
           ),
         ],
@@ -91,9 +135,11 @@ class HalfCustomTextDetectorPage extends HookWidget {
     ValueNotifier<String> text,
     ValueNotifier<CameraLensDirection> cameraLensDirection,
     ValueNotifier<TextRecognizer> textRecognizer,
+    ValueNotifier<bool> enableDetect,
   ) async {
     if (!canProcess.value) return;
     if (isBusy.value) return;
+    if (!enableDetect.value) return;
     isBusy.value = true;
     text.value = '';
     // setState(() {

@@ -16,6 +16,7 @@ class CameraView extends StatefulWidget {
     this.onCameraLensDirectionChanged,
     this.initialCameraLensDirection = CameraLensDirection.back,
     this.onTapCustomPaint,
+    this.onChangedDetect,
   }) : super(key: key);
 
   final CustomPaint? customPaint;
@@ -24,8 +25,8 @@ class CameraView extends StatefulWidget {
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
-  final Function(List<Rect>, TapDownDetails tapDetails)? onTapCustomPaint;
-
+  final Function(List<(Rect, String)>, TapDownDetails tapDetails)? onTapCustomPaint;
+  final Function(bool enabledDetect)? onChangedDetect;
   @override
   State<CameraView> createState() => _CameraViewState();
 }
@@ -42,6 +43,7 @@ class _CameraViewState extends State<CameraView> {
   double _currentExposureOffset = 0.0;
   bool _changingCameraLens = false;
   final List<Rect> _blocks = [];
+  bool _enabledDetect = false;
 
   @override
   void initState() {
@@ -108,22 +110,24 @@ class _CameraViewState extends State<CameraView> {
                         // もしくは、customPaint内で生成させるblockを外部参照できるようにさせる
                         child: widget.customPaint,
                         onTapDown: (TapDownDetails details) {
-                          final tmp = widget.customPaint?.painter as TextRecognizerPainter;
+                          final tmp = widget.customPaint?.painter
+                              as TextRecognizerPainter;
                           final blocks = tmp.paintedBlocks;
                           debugPrint('tap! tap! tap! -- $blocks}');
                           widget.onTapCustomPaint?.call(blocks, details);
                         }),
-                        // },
-                        // onTap: () {
-                        //   final tmp = widget.customPaint?.painter as TextRecognizerPainter;
-                        //   final blocks = tmp.paintedBlocks;
-                        //   debugPrint('tap! tap! tap! -- $blocks}');
-                        //   widget.onTapCustomPaint?.call();
-                        // }),
+                    // },
+                    // onTap: () {
+                    //   final tmp = widget.customPaint?.painter as TextRecognizerPainter;
+                    //   final blocks = tmp.paintedBlocks;
+                    //   debugPrint('tap! tap! tap! -- $blocks}');
+                    //   widget.onTapCustomPaint?.call();
+                    // }),
                   ),
           ),
           _backButton(),
-          _switchLiveCameraToggle(),
+          // _switchLiveCameraToggle(),
+          _switchVisibleDetectPainter(),
           _detectionViewModeToggle(),
           _zoomControl(),
           _exposureControl(),
@@ -168,7 +172,7 @@ class _CameraViewState extends State<CameraView> {
         ),
       );
 
-  Widget _switchLiveCameraToggle() => Positioned(
+  Widget _switchVisibleDetectPainter() => Positioned(
         bottom: 8,
         right: 8,
         child: SizedBox(
@@ -176,17 +180,41 @@ class _CameraViewState extends State<CameraView> {
           width: 50.0,
           child: FloatingActionButton(
             heroTag: Object(),
-            onPressed: _switchLiveCamera,
+            onPressed: _handleSwitchVisibleDetectPainter,
             backgroundColor: Colors.black54,
-            child: Icon(
-              Platform.isIOS
-                  ? Icons.flip_camera_ios_outlined
-                  : Icons.flip_camera_android_outlined,
+            child: const Icon(
+              Icons.pallet,
               size: 25,
             ),
           ),
         ),
       );
+
+  void _handleSwitchVisibleDetectPainter() {
+    final nextValue = !_enabledDetect;
+    setState(() => _enabledDetect = nextValue);
+    widget.onChangedDetect?.call(nextValue);
+  }
+
+  // Widget _switchLiveCameraToggle() => Positioned(
+  //       bottom: 8,
+  //       right: 8,
+  //       child: SizedBox(
+  //         height: 50.0,
+  //         width: 50.0,
+  //         child: FloatingActionButton(
+  //           heroTag: Object(),
+  //           onPressed: _switchLiveCamera,
+  //           backgroundColor: Colors.black54,
+  //           child: Icon(
+  //             Platform.isIOS
+  //                 ? Icons.flip_camera_ios_outlined
+  //                 : Icons.flip_camera_android_outlined,
+  //             size: 25,
+  //           ),
+  //         ),
+  //       ),
+  //     );
 
   Widget _zoomControl() => Positioned(
         bottom: 16,
