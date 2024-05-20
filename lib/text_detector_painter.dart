@@ -25,7 +25,11 @@ class TextRecognizerPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    debugPrint('paintSize: $size');
     paintedBlocks.clear();
+    final scaleX = size.width / imageSize.width;
+    final scaleY = size.height / imageSize.height;
+
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
@@ -42,6 +46,7 @@ class TextRecognizerPainter extends CustomPainter {
       );
       builder.pushStyle(
           ui.TextStyle(color: Colors.greenAccent, background: background));
+      // builder.addText(textBlock.text.substring(0, 1));
       builder.addText(textBlock.text);
       builder.pop();
 
@@ -73,11 +78,20 @@ class TextRecognizerPainter extends CustomPainter {
       //   rotation,
       //   cameraLensDirection,
       // );
-      //
+      
       // canvas.drawRect(
       //   Rect.fromLTRB(left, top, right, bottom),
       //   paint,
       // );
+      
+      // final rect = Rect.fromLTRB(
+      //   textBlock.boundingBox.top * scaleY,
+      //   textBlock.boundingBox.left * scaleX,
+      //   textBlock.boundingBox.bottom * scaleY,
+      //   textBlock.boundingBox.right * scaleX,
+      // );
+      // canvas.drawRect(rect, paint);
+
 
       final List<Offset> cornerPoints = <Offset>[];
       for (final point in textBlock.cornerPoints) {
@@ -173,7 +187,9 @@ class TextRecognizerPainter extends CustomPainter {
       final minY = cornerPoints.map((e) => e.dy).min;
       final maxX = cornerPoints.map((e) => e.dx).max;
       final maxY = cornerPoints.map((e) => e.dy).max;
-      paintedBlocks.add((Rect.fromLTRB(minX, minY, maxX, maxY), textBlock.text));
+      final singleLineStr = textBlock.text.replaceAll(RegExp(r'[ \n\r ]'), '');
+      paintedBlocks.add((Rect.fromLTRB(minX, minY, maxX, maxY), singleLineStr));
+      debugPrint('paintBlocks: $paintedBlocks');
 
       canvas.drawParagraph(
         builder.build()

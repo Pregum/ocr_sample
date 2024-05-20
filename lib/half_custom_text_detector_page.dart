@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:ocr_sample/detector_view.dart';
 import 'package:ocr_sample/text_detector_painter.dart';
+import 'package:image/image.dart' as img;
 
 class HalfCustomTextDetectorPage extends HookWidget {
   // bool _canProcess = true;
@@ -51,6 +55,7 @@ class HalfCustomTextDetectorPage extends HookWidget {
             child: DetectorView(
               title: 'テキスト検出',
               onImage: (InputImage inputImage) {
+                debugPrint('start processImage');
                 _processImage(
                   context,
                   inputImage,
@@ -156,11 +161,40 @@ class HalfCustomTextDetectorPage extends HookWidget {
         inputImage.metadata!.rotation,
         cameraLensDirection.value,
       );
+      final size = MediaQuery.sizeOf(context);
+      debugPrint(
+          'mediaQuery: $size, size: ${inputImage.metadata?.size}, rotation: ${inputImage.metadata!.rotation}');
       customPaint.value = CustomPaint(painter: painter);
     } else {
-      text.value = 'Recognized text:\n\n${recognizedText.text}';
-      // TODO: set _customPaint to draw boundingRect on top of image
-      customPaint.value = null;
+      // text.value = 'Recognized text:\n\n${recognizedText.text}';
+      // // TODO: set _customPaint to draw boundingRect on top of image
+      // customPaint.value = null;
+      // final bytes = inputImage.!;
+      final image = File(inputImage.filePath!);
+      final bytes = await image.readAsBytes();
+      final decodedImage = img.decodeImage(Uint8List.fromList(bytes))!;
+      // 画像のサイズを取得する
+      // final bytes = await image.readAsBytes();
+      // final decodedImage = img.decodeImage(Uint8List.fromList(bytes))!;
+      final size = MediaQuery.sizeOf(context);
+      // debugPrint('mediaQuery: $size, Width: ${decodedImage.width}, Height: ${decodedImage.height}');
+      debugPrint(
+          'mediaQuery: $size, size: ${inputImage.metadata?.size}, rotation: ${inputImage.metadata?.rotation}');
+
+      final painter = TextRecognizerPainter(
+        recognizedText,
+        // inputImage.metadata?.size ??
+        Size(
+          decodedImage.width.toDouble(),
+          decodedImage.height.toDouble(),
+          // 720,
+          // 1280,
+        ),
+        // const Size(400, 400),
+        inputImage.metadata?.rotation ?? InputImageRotation.rotation0deg,
+        cameraLensDirection.value,
+      );
+      customPaint.value = CustomPaint(painter: painter);
     }
     isBusy.value = false;
     // if (context.mounted) {

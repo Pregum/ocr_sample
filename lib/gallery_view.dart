@@ -5,22 +5,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ocr_sample/text_detector_painter.dart';
+import 'package:image/image.dart' as img;
 
 import 'utils.dart';
 
 class GalleryView extends StatefulWidget {
-  GalleryView(
-      {Key? key,
-      required this.title,
-      this.text,
-      required this.onImage,
-      required this.onDetectorViewModeChanged})
-      : super(key: key);
+  const GalleryView({
+    super.key,
+    required this.title,
+    this.text,
+    required this.onImage,
+    required this.onDetectorViewModeChanged,
+    this.customPaint,
+    this.onTapCustomPaint,
+  });
 
   final String title;
   final String? text;
   final Function(InputImage inputImage) onImage;
   final Function()? onDetectorViewModeChanged;
+  final CustomPaint? customPaint;
+  final Function(List<(Rect, String)>, TapDownDetails tapDetails)?
+      onTapCustomPaint;
 
   @override
   State<GalleryView> createState() => _GalleryViewState();
@@ -30,6 +37,7 @@ class _GalleryViewState extends State<GalleryView> {
   File? _image;
   String? _path;
   ImagePicker? _imagePicker;
+  Size _imageSize = Size(400, 400);
 
   @override
   void initState() {
@@ -45,7 +53,7 @@ class _GalleryViewState extends State<GalleryView> {
           title: Text(widget.title),
           actions: [
             Padding(
-              padding: EdgeInsets.only(right: 20.0),
+              padding: const EdgeInsets.only(right: 20.0),
               child: GestureDetector(
                 onTap: widget.onDetectorViewModeChanged,
                 child: Icon(
@@ -64,35 +72,64 @@ class _GalleryViewState extends State<GalleryView> {
           ? SizedBox(
               height: 400,
               width: 400,
+              // width: 228,
+              // height: _imageSize.height,
+              // width: _imageSize.width,
               child: Stack(
                 fit: StackFit.expand,
                 children: <Widget>[
-                  Image.file(_image!),
+                  Positioned.fill(
+                      // height: 400, width: 400, child: Image.file(_image!)),
+                      // height: 400, width: 228,
+                      child: Center(child: Image.file(_image!))),
+                  Positioned.fill(
+                    // height: 400,
+                    // width: 400,
+                    // width: 228,
+                    child: Center(
+                      child: ClipRect(
+                        child: Container(
+                          height: 400,
+                          width: 228,
+                          child: GestureDetector(
+                            child: widget.customPaint,
+                            onTapDown: (TapDownDetails details) {
+                              // ここにタップしたエリアを返すコールバック処理を書く
+                              final tmp = widget.customPaint?.painter
+                                  as TextRecognizerPainter;
+                              final blocks = tmp.paintedBlocks;
+                              widget.onTapCustomPaint?.call(blocks, details);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             )
-          : Icon(
+          : const Icon(
               Icons.image,
               size: 200,
             ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ElevatedButton(
           onPressed: _getImageAsset,
-          child: Text('From Assets'),
+          child: const Text('From Assets'),
         ),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ElevatedButton(
-          child: Text('From Gallery'),
+          child: const Text('From Gallery'),
           onPressed: () => _getImage(ImageSource.gallery),
         ),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ElevatedButton(
-          child: Text('Take a picture'),
+          child: const Text('Take a picture'),
           onPressed: () => _getImage(ImageSource.camera),
         ),
       ),
@@ -139,7 +176,7 @@ class _GalleryViewState extends State<GalleryView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Select image',
                     style: TextStyle(fontSize: 20),
                   ),
@@ -166,7 +203,7 @@ class _GalleryViewState extends State<GalleryView> {
                   ),
                   ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('Cancel')),
+                      child: const Text('Cancel')),
                 ],
               ),
             ),
@@ -179,6 +216,16 @@ class _GalleryViewState extends State<GalleryView> {
       _image = File(path);
     });
     _path = path;
+    final bytes = await _image?.readAsBytes();
+    if (bytes != null) {
+      final decodedImage = img.decodeImage(Uint8List.fromList(bytes))!;
+      // print('Width: ${decodedImage.width}, Height: ${decodedImage.height}');
+      // setState(() => _imageSize = Size(decodedImage.width.toDouble(),
+      //     decodedImage.height.toDouble()));
+      // return;
+    } else {
+      debugPrint('bytes is null: ${_image}');
+    }
     final inputImage = InputImage.fromFilePath(path);
     widget.onImage(inputImage);
   }

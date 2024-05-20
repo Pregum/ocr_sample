@@ -32,7 +32,8 @@ class DetectorView extends StatefulWidget {
   final Function(DetectorViewMode mode)? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
-  final Function(List<(Rect, String)>, TapDownDetails tapDetails)? onTapCustomPaint;
+  final Function(List<(Rect, String)>, TapDownDetails tapDetails)?
+      onTapCustomPaint;
   final Function(bool enableDetect)? onChangeVisibleDetectPainter;
 
   @override
@@ -65,6 +66,8 @@ class _DetectorViewState extends State<DetectorView> {
             title: widget.title,
             text: widget.text,
             onImage: widget.onImage,
+            customPaint: widget.customPaint,
+            onTapCustomPaint: widget.onTapCustomPaint,
             onDetectorViewModeChanged: _onDetectorViewModeChanged);
   }
 
