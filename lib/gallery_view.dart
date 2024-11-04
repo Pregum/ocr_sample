@@ -220,9 +220,9 @@ class _GalleryViewState extends State<GalleryView> {
     if (bytes != null) {
       final decodedImage = img.decodeImage(Uint8List.fromList(bytes))!;
       // print('Width: ${decodedImage.width}, Height: ${decodedImage.height}');
-      // setState(() => _imageSize = Size(decodedImage.width.toDouble(),
-      //     decodedImage.height.toDouble()));
-      // return;
+      setState(() => _imageSize = Size(decodedImage.width.toDouble(),
+          decodedImage.height.toDouble()));
+      return;
     } else {
       debugPrint('bytes is null: ${_image}');
     }

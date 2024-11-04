@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ocr_sample/camera_preview_page.dart';
+import 'package:ocr_sample/camera_preview_page_v2.dart';
 import 'package:ocr_sample/custom_text_detector_page.dart';
 import 'package:ocr_sample/half_custom_text_detector_page.dart';
 import 'package:ocr_sample/text_detector_view.dart';
@@ -54,6 +55,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('サンプルページへ遷移'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CameraPreviewPageV2(),
+                  ),
+                );
+              },
+              child: const Text('v2サンプルページへ遷移'),
             ),
             ElevatedButton(
               onPressed: () {

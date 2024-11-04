@@ -58,6 +58,19 @@ class CameraPreviewPage extends HookConsumerWidget {
       useMemoized(() => initialize(), [isInitialized.value]),
     );
 
+    final imageData = useFuture(useMemoized(() async {
+      // return selectedImage.value?.readAsBytes();
+      if (selectedImage.value != null) {
+        final file = File(selectedImage.value!.path);
+        final decodedImage =
+            await decodeImageFromList(await file.readAsBytes());
+        return decodedImage.width / decodedImage.height;
+      }
+      return null;
+    }, [
+      selectedImage.value,
+    ]));
+
     useEffect(() {
       initialize();
       return () {
@@ -93,17 +106,25 @@ class CameraPreviewPage extends HookConsumerWidget {
             Stack(
               children: [
                 Positioned(
+                  top: 0,
+                  bottom: 0,
+                  width: MediaQuery.sizeOf(context).width,
                   child: SizedBox(
-                    height: MediaQuery.sizeOf(context).height,
-                    width: MediaQuery.sizeOf(context).width,
                     child: selectedImage.value != null
-                        ? Image.file(File(selectedImage.value!.path))
+                        ? AspectRatio(
+                            aspectRatio: imageData.data ?? 1,
+                            child: Image.file(File(selectedImage.value!.path)),
+                          )
                         : CameraPreview(val),
                   ),
                 ),
                 if (recognizedText.value != null)
                   Positioned(
-                    child: Container(
+                    top: 0,
+                    bottom: 0,
+                    width: MediaQuery.sizeOf(context).width,
+                    child: AspectRatio(
+                      aspectRatio: imageData.data ?? 1,
                       child: CustomPaint(
                         painter: DetectedArea(
                             textBlocks: recognizedText.value?.blocks ?? []),
@@ -113,7 +134,8 @@ class CameraPreviewPage extends HookConsumerWidget {
                   ),
                 if (selectedImage.value == null)
                   Positioned(
-                    height: MediaQuery.sizeOf(context).height * 0.2,
+                    // height: MediaQuery.sizeOf(context).height * 0.3,
+                    top: 0,
                     bottom: 0,
                     width: MediaQuery.sizeOf(context).width,
                     child: Row(
@@ -121,45 +143,43 @@ class CameraPreviewPage extends HookConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // const Spacer(),
-                        Center(
-                          child: SizedBox(
-                            // height: MediaQuery.sizeOf(context).height * 0.3,
-                            width: MediaQuery.sizeOf(context).width * 0.3,
-                            child: PlatformIconButton(
-                              padding: const EdgeInsets.all(0),
-                              onPressed: () async {
-                                try {
-                                  final camera = controller.value;
-                                  if (camera == null) {
-                                    return;
-                                  }
-                                  final (result, file) =
-                                      await _scanImage(context, camera);
-                                  debugPrint('result: ${result.text}');
-                                  recognizedText.value = result;
-                                  selectedImage.value = file;
-                                  // final path = [
-                                  //   (await getTemporaryDirectory()).path,
-                                  //   '${DateTime.now().toIso8601String()}.png'
-                                  // ].join('/');
-                                  // debugPrint('tmp path: $path');
-
-                                  // final file =
-                                  //     await controller.value?.takePicture();
-                                  // debugPrint('file.path: ${file?.path}');
-                                  // if (file == null) {
-                                  //   return;
-                                  // }
-                                  // selectedImage.value = file;
-                                  // File imageFile = File(path);
-                                } catch (e) {
-                                  debugPrint('error: $e');
+                        SizedBox(
+                          height: MediaQuery.sizeOf(context).height * 0.3,
+                          width: MediaQuery.sizeOf(context).width * 0.3,
+                          child: PlatformIconButton(
+                            padding: const EdgeInsets.all(0),
+                            onPressed: () async {
+                              try {
+                                final camera = controller.value;
+                                if (camera == null) {
+                                  return;
                                 }
-                              },
-                              icon: const Icon(
-                                Icons.camera,
-                                color: Colors.blue,
-                              ),
+                                final (result, file) =
+                                    await _scanImage(context, camera);
+                                debugPrint('result: ${result.text}');
+                                recognizedText.value = result;
+                                selectedImage.value = file;
+                                // final path = [
+                                //   (await getTemporaryDirectory()).path,
+                                //   '${DateTime.now().toIso8601String()}.png'
+                                // ].join('/');
+                                // debugPrint('tmp path: $path');
+
+                                // final file =
+                                //     await controller.value?.takePicture();
+                                // debugPrint('file.path: ${file?.path}');
+                                // if (file == null) {
+                                //   return;
+                                // }
+                                // selectedImage.value = file;
+                                // File imageFile = File(path);
+                              } catch (e) {
+                                debugPrint('error: $e');
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.camera,
+                              color: Colors.blue,
                             ),
                           ),
                         ),
@@ -169,7 +189,9 @@ class CameraPreviewPage extends HookConsumerWidget {
                   )
                 else
                   Positioned(
-                    height: MediaQuery.sizeOf(context).height * 0.2,
+                    // height: MediaQuery.sizeOf(context).height * 0.2,
+
+                    top: 0,
                     bottom: 0,
                     width: MediaQuery.sizeOf(context).width,
                     child: Expanded(
